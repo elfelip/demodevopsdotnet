@@ -1,0 +1,73 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookstore
+  labels:
+    istio-injection: enabled
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: bookstoredb
+  namespace: bookstore
+spec:
+  template:
+    metadata:
+      labels:
+        app: bookstoredb
+    spec:
+      containers:
+      - name: bookstoredb
+        image: localhost:32000/mongobookstore:latest
+        ports:
+        - containerPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstoredb-service
+  namespace: bookstore
+  labels:
+    app: bookstoredb
+spec:
+  ports:
+  - name: client
+    port: 27017
+    protocol: TCP
+  selector:
+    app: bookstoredb
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: bookstoreapi
+  namespace: bookstore
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: bookstoreapi
+    spec:
+      containers:
+      - name: bookstoreapi
+        image: localhost:32000/booksapi:latest
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstoreapi-service
+  namespace: bookstore
+  labels:
+    app: bookstoreapi
+spec:
+  ports:
+  - name: client
+    port: 80
+    protocol: TCP
+  selector:
+    app: bookstoreapi

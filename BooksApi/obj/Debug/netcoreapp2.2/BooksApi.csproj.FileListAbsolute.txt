@@ -1,0 +1,14 @@
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/bin/Debug/netcoreapp2.2/BooksApi.deps.json
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/bin/Debug/netcoreapp2.2/BooksApi.runtimeconfig.json
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/bin/Debug/netcoreapp2.2/BooksApi.runtimeconfig.dev.json
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/bin/Debug/netcoreapp2.2/BooksApi.dll
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/bin/Debug/netcoreapp2.2/BooksApi.pdb
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/obj/Debug/netcoreapp2.2/BooksApi.csprojAssemblyReference.cache
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/obj/Debug/netcoreapp2.2/BooksApi.csproj.CoreCompileInputs.cache
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/obj/Debug/netcoreapp2.2/BooksApi.RazorAssemblyInfo.cache
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/obj/Debug/netcoreapp2.2/BooksApi.RazorAssemblyInfo.cs
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/obj/Debug/netcoreapp2.2/BooksApi.AssemblyInfoInputs.cache
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/obj/Debug/netcoreapp2.2/BooksApi.AssemblyInfo.cs
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/obj/Debug/netcoreapp2.2/BooksApi.RazorTargetAssemblyInfo.cache
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/obj/Debug/netcoreapp2.2/BooksApi.dll
+/home/gauphi01@inspq.qc.ca/git/github/elfelip/demodevopsdotnet/BooksApi/obj/Debug/netcoreapp2.2/BooksApi.pdb

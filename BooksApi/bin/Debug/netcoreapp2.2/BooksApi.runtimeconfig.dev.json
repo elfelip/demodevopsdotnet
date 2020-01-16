@@ -1,0 +1,9 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "/home/gauphi01@inspq.qc.ca/.dotnet/store/|arch|/|tfm|",
+      "/home/gauphi01@inspq.qc.ca/.nuget/packages",
+      "/usr/share/dotnet/sdk/NuGetFallbackFolder"
+    ]
+  }
+}
