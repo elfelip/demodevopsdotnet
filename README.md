@@ -11,5 +11,5 @@ docker push elfelip01/booksapi:latest
 
 Déploiement
 Pour déployer, kubectl doit être installé et configuré pour se connecter au cluster.
-
+git 
 kubectl apply -f bookstore.yml
