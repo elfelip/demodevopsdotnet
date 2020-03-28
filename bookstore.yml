@@ -6,12 +6,19 @@ metadata:
   labels:
     istio-injection: enabled
 ---
-kind: Deployment
-apiVersion: extensions/v1beta1
+kind: StatefulSet
+apiVersion: apps/v1
 metadata:
   name: bookstoredb
   namespace: bookstore
+  labels:
+    app: bookstoredb
 spec:
+  serviceName: bookstoredb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookstoredb
   template:
     metadata:
       labels:
@@ -19,9 +26,33 @@ spec:
     spec:
       containers:
       - name: bookstoredb
-        image: localhost:32000/mongobookstore:latest
+        image: elfelip01/mongobookstore:latest
         ports:
         - containerPort: 27017
+        volumeMounts:
+        - name: bookstoredb-data
+          mountPath: /mongo/data
+
+      volumes:
+        - name: bookstoredb-data
+          persistentVolumeClaim:
+            claimName: bookstoredb-claim
+            
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: bookstoredb-claim
+  namespace: bookstore
+  labels:
+    app: bookstoredb
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
 ---
 apiVersion: v1
 kind: Service
@@ -39,12 +70,15 @@ spec:
     app: bookstoredb
 ---
 kind: Deployment
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: bookstoreapi
   namespace: bookstore
 spec:
   replicas: 3
+  selector:
+    matchLabels:
+      app: bookstoreapi
   template:
     metadata:
       labels:
@@ -52,7 +86,7 @@ spec:
     spec:
       containers:
       - name: bookstoreapi
-        image: localhost:32000/booksapi:latest
+        image: elfelip01/booksapi:latest
         imagePullPolicy: "Always"
         ports:
         - containerPort: 80
