@@ -2,11 +2,13 @@ using BooksApi.Models;
 using BooksApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BooksApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize]
     public class BooksController : ControllerBase
     {
         private readonly BookService _bookService;
@@ -15,7 +17,6 @@ namespace BooksApi.Controllers
         {
             _bookService = bookService;
         }
-
         [HttpGet]
         public ActionResult<List<Book>> Get() =>
             _bookService.Get();
