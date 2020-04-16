@@ -86,7 +86,6 @@ metadata:
   labels:
     app: keycloak
 spec:
-  name: keycloak-service
   ports:
   - name: web
     port: 8080
@@ -174,7 +173,7 @@ spec:
     spec:
       containers:
       - name: bookstoreapi
-        image: elfelip01/booksapi:3.1
+        image: elfelip01/booksapi:oidc
         imagePullPolicy: "Always"
         ports:
         - containerPort: 80

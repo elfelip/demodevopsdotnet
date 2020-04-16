@@ -8,7 +8,6 @@ namespace BooksApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
     public class BooksController : ControllerBase
     {
         private readonly BookService _bookService;
@@ -21,6 +20,7 @@ namespace BooksApi.Controllers
         public ActionResult<List<Book>> Get() =>
             _bookService.Get();
 
+        [Authorize]
         [HttpGet("{id:length(24)}", Name = "GetBook")]
         public ActionResult<Book> Get(string id)
         {

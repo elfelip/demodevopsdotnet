@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 using Microsoft.Extensions.Options;
-//using Microsoft.AspNetCore.Authentication.Cookies;
-//using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+
 using BooksApi.Models;
 using BooksApi.Services;
 
@@ -31,45 +25,18 @@ namespace BooksApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //var identityUrl = Configuration.GetValue<string>("IdentityUrl");
-            //var callBackUrl = Configuration.GetValue<string>("CallBackUrl");
-            //var sessionCookieLifetime = Configuration.GetValue("SessionCookieLifetimeMinutes", 60);
-
-            // Add Authentication services
-/*
             services.AddAuthentication(options =>
             {
-                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddCookie(setup => setup.ExpireTimeSpan = TimeSpan.FromMinutes(sessionCookieLifetime))
-            .AddOpenIdConnect(options =>
+            .AddJwtBearer("Bearer", options =>
             {
-                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.Authority = identityUrl.ToString();
-                options.SignedOutRedirectUri = callBackUrl.ToString();
-                options.ClientId = "bookstoreapi";
-                options.ClientSecret = "715f81a1-b2fa-4c04-be6a-3f35738e2e1a";
-                options.ResponseType = "code id_token token";
-                options.SaveTokens = true;
-                options.GetClaimsFromUserInfoEndpoint = true;
+                options.Authority = Configuration["Keycloak:Issuer"];
                 options.RequireHttpsMetadata = false;
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
+
+                options.Audience = Configuration["Keycloak:ClientId"];
             });
-        
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy(DefaultAuthorizedPolicy, policy =>
-                {
-                    policy.Requirements.Add(new TokenAuthRequirement());
-                    policy.AuthenticationSchemes = new List<string>()
-                    {
-                        CookieAuthenticationDefaults.AuthenticationScheme
-                    };
-                });
-            });
-            */
             services.Configure<BookstoreDatabaseSettings>(
             Configuration.GetSection(nameof(BookstoreDatabaseSettings)));
 
@@ -78,9 +45,12 @@ namespace BooksApi
 
             services.AddSingleton<BookService>();
             services.AddControllers();
-
-            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-
+            services.AddAuthorization(options => 
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -92,7 +62,7 @@ namespace BooksApi
             }
 
             app.UseHttpsRedirection();
-
+            
             app.UseRouting();
 
             app.UseAuthorization();
