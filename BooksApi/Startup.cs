@@ -54,18 +54,33 @@ namespace BooksApi
                 options.AddPolicy("customer",
                           policy => policy.RequireAssertion(context =>
                                   context.User.HasClaim(c =>
-                                     c.Type == "bookstore_roles" && 
+                                     c.Type == "client_roles" && 
                                      c.Value.Contains("customer"))));
                 options.AddPolicy("employee",
                           policy => policy.RequireAssertion(context =>
                                   context.User.HasClaim(c =>
-                                     c.Type == "bookstore_roles" && 
+                                     c.Type == "client_roles" && 
                                      c.Value.Contains("employee"))));
                 options.AddPolicy("admin",
                           policy => policy.RequireAssertion(context =>
                                   context.User.HasClaim(c =>
-                                     c.Type == "bookstore_roles" && 
+                                     c.Type == "client_roles" && 
                                      c.Value.Contains("admin"))));
+                //options.AddPolicy("customer",
+                //          policy => policy.RequireAssertion(context =>
+                //                  context.User.HasClaim(c =>
+                //                     c.Type == String.Format("resource_access.{0}.roles", Configuration["Keycloak:ClientId"]) && 
+                //                     c.Value.Contains("customer"))));
+                //options.AddPolicy("employee",
+                //          policy => policy.RequireAssertion(context =>
+                //                  context.User.HasClaim(c =>
+                //                     c.Type == String.Format("resource_access.{0}.roles", Configuration["Keycloak:ClientId"]) && 
+                //                     c.Value.Contains("employee"))));
+                //options.AddPolicy("admin",
+                //          policy => policy.RequireAssertion(context =>
+                //                  context.User.HasClaim(c =>
+                //                     c.Type == String.Format("resource_access.{0}.roles", Configuration["Keycloak:ClientId"]) && 
+                //                     c.Value.Contains("admin"))));
             });
             
         }
