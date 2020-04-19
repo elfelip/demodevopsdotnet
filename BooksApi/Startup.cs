@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -50,7 +51,23 @@ namespace BooksApi
                 options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
                     .RequireAuthenticatedUser()
                     .Build();
+                options.AddPolicy("customer",
+                          policy => policy.RequireAssertion(context =>
+                                  context.User.HasClaim(c =>
+                                     c.Type == "bookstore_roles" && 
+                                     c.Value.Contains("customer"))));
+                options.AddPolicy("employee",
+                          policy => policy.RequireAssertion(context =>
+                                  context.User.HasClaim(c =>
+                                     c.Type == "bookstore_roles" && 
+                                     c.Value.Contains("employee"))));
+                options.AddPolicy("admin",
+                          policy => policy.RequireAssertion(context =>
+                                  context.User.HasClaim(c =>
+                                     c.Type == "bookstore_roles" && 
+                                     c.Value.Contains("admin"))));
             });
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

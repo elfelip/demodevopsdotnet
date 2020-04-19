@@ -3,11 +3,13 @@ using BooksApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace BooksApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class BooksController : ControllerBase
     {
         private readonly BookService _bookService;
@@ -16,11 +18,12 @@ namespace BooksApi.Controllers
         {
             _bookService = bookService;
         }
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<List<Book>> Get() =>
             _bookService.Get();
 
-        [Authorize]
+        [Authorize(Policy = "customer")]
         [HttpGet("{id:length(24)}", Name = "GetBook")]
         public ActionResult<Book> Get(string id)
         {
@@ -34,6 +37,7 @@ namespace BooksApi.Controllers
             return book;
         }
 
+        [Authorize(Policy = "employee")]
         [HttpPost]
         public ActionResult<Book> Create(Book book)
         {
@@ -42,6 +46,7 @@ namespace BooksApi.Controllers
             return CreatedAtRoute("GetBook", new { id = book.Id.ToString() }, book);
         }
 
+        [Authorize(Policy = "employee")]
         [HttpPut("{id:length(24)}")]
         public IActionResult Update(string id, Book bookIn)
         {
@@ -57,6 +62,7 @@ namespace BooksApi.Controllers
             return NoContent();
         }
 
+        [Authorize(Policy = "admin")]
         [HttpDelete("{id:length(24)}")]
         public IActionResult Delete(string id)
         {
