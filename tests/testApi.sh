@@ -1,5 +1,5 @@
 #!/bin/bash
-KEYCLOAK_URL=http://keycloak.lacave
+KEYCLOAK_URL=https://keycloak.lacave
 KEYCLOAK_REALM=bookstore
 KEYCLOAK_USER=gontran
 KEYCLOAK_PASSWORD=toto1234

@@ -6,6 +6,24 @@ metadata:
   labels:
     istio-injection: enabled
 ---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: keycloak-lacave-tls
+  namespace: bookstore
+spec:
+  secretName: keycloak-lacave-tls
+  issuerRef:
+    name: ca-lacave-issuer
+    # We can reference ClusterIssuers by changing the kind here.
+    # The default value is Issuer (i.e. a locally namespaced Issuer)
+    kind: Issuer
+  commonName: keycloak.lacave
+  organization:
+  - Lacave CA
+  dnsNames:
+  - keycloak.lacave
+---
 kind: StatefulSet
 apiVersion: apps/v1
 metadata:
@@ -32,6 +50,8 @@ spec:
           value: admin
         - name: KEYCLOAK_PASSWORD
           value: admin
+        - name: PROXY_ADDRESS_FORWARDING
+          value: "true"
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -68,7 +88,12 @@ metadata:
   name: ingress-keycloak
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/issuer: ca-lacave-issuer
 spec:
+  tls:
+  - hosts:
+    - keycloak.lacave
+    secretName: keycloak-lacave-tls
   rules:
   - host: keycloak.lacave
     http:
@@ -113,18 +138,17 @@ spec:
     spec:
       containers:
       - name: bookstoredb
+        # Ajuster le nom de l'image en fonction du repository Docker utilisé
         image: elfelip01/mongobookstore:latest
         ports:
         - containerPort: 27017
         volumeMounts:
         - name: bookstoredb-data
           mountPath: /mongo/data
-
       volumes:
         - name: bookstoredb-data
           persistentVolumeClaim:
             claimName: bookstoredb-claim
-            
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -173,10 +197,15 @@ spec:
     spec:
       containers:
       - name: bookstoreapi
-        image: elfelip01/booksapi:oidc
+        # Ajuster le nom de l'image en fonction du repository Docker utilisé
+        image: docker.lacave/booksapi:latest
         imagePullPolicy: "Always"
         ports:
         - containerPort: 80
+      # Spécifier le crédentiel si vous utilisé un repository Docker privé. 
+      # Pas nécessaire pour Docker Hub
+      imagePullSecrets:
+      - name: regcred
 ---
 apiVersion: v1
 kind: Service

@@ -27,23 +27,39 @@ kube                    A       192.168.1.21
 bookstoreapi            CNAME   kube.lacave.
 keycloak                CNAME   kube.lacave.
 
+# Configurer un repository Docker
+La manière la plus simple d'avoir un dépôt pour les images Docker est de se créer un compte sur Docker Hub. Dans ce cas, le dépôt aura votre nom d'utilisateur.
+Il faut aller créer les projets mongobookstore et booksapi
+Remplacer Votre-Docker-Repo par votre nom d'utilisateur Docker Hub dans les commandes des étapes suivantes.
+
 # Construction des images du projet
 Construction de l'image Mongo
 
 cd mongodb
-docker build --tag elfelip01/mongobookstore:latest .
-docker push elfelip01/mongobookstore:latest
+docker build --tag Votre-Docker-Repo/mongobookstore:latest .
+docker push Votre-Docker-Repo/mongobookstore:latest
 
 Construction du conteneur applicatif
 cd BookApi
-docker build --tag elfelip01/booksapi:latest .
-docker push elfelip01/booksapi:oidc
+docker build --tag Votre-Docker-Repo/booksapi:latest .
+docker push Votre-Docker-Repo/booksapi:oidc
+
+# Autorité de certification
+Pour pouvoir fédérer des fournisseurs d'identités comme Google, Microsoft ou Facebook, il est important que le serveur d'authentification soit exposé en HTTPS en utilistant le protocol TLS.
+Pour pouvoir créer des certificats à l'intérieur de Kubernetes, on créé une autorité de certification selfsigned.
+Pour créer l'autorité de certification, lancer le fichier de déploiement cert/root-ca-cert-manager.yml
+
+    kubectl apply -f cert/root-ca-cert-manager.yml
+
+Pour que votre système fasse confiance à cet autorité de certification, vous devez ajouter le certificat BooksApi/cert/ca-root.crt dans les autorités de certification de confiance du magasin de certificat de votre système. Si vous utilisez Firefox, ce certificat doit aussi être ajouté aux autorités de certification de confiance du navigateur.
 
 # Déploiement
 Pour déployer, kubectl doit être installé et configuré pour se connecter au cluster.
 Le fichier de déploiement bookstore.yml contient l'ensemble des configuration permettant de déployer l'application et les services nécessaires.
 
 Le namespace bookstore est créé et tous les composants y sont déployé.
+
+La première étape est d'aller ajuster les images Docker du Mongo et du bookstoreapi dans le fichier de déploiement bookstore.yml.
 
 Pour déployer le système, lancer la commande suivante.
 
