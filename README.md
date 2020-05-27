@@ -32,6 +32,13 @@ La manière la plus simple d'avoir un dépôt pour les images Docker est de se c
 Il faut aller créer les projets mongobookstore et booksapi
 Remplacer Votre-Docker-Repo par votre nom d'utilisateur Docker Hub dans les commandes des étapes suivantes.
 
+Dans le cas ou vous utilisez un registre privé, on doit alors s'y authentifier et créer le crédentiels
+Pour s'y authentfierl lancer la commande docker login:
+
+    docker login docker.lacave
+
+Fournir l'utilisateur et le mot de passe. Pour l'ajout du crédentiel dans Kubernetes, ca se fait un fois le namepsace créé.
+
 # Construction des images du projet
 Construction de l'image Mongo
 
@@ -65,6 +72,12 @@ Pour déployer le système, lancer la commande suivante.
 
     kubectl apply -f bookstore.yml
 
+# Créer le secret pour pouvoir accéder aux images des dépôts privés
+
+Créer le secret dans Kubernetes:
+
+    kubectl create secret generic regcred --from-file=.dockerconfigjson=${HOME}/.docker/config.json --type=kubernetes.io/dockerconfigjson -n bookstore
+
 # Configurer le serveur d'authentifcation
 Le fichier de déploiement Kubernetes déploie un serveur d'authentification Keycloak: https://www.keycloak.org
 
@@ -85,7 +98,7 @@ Le royaume contient 2 clients:
     bookstoreui: Client de type confidentiel pour l'éventuel interface utilisateur
     bookstoreapi: Client de type bearer only pour les services web.
 
-On doit faire générer de nouveau client secret pour les deux client:
+On doit faire générer de nouveau client secret pour les deux clients:
     Sélectionner le realm bookstore
     Aller dans client et cliquer sur le client bookstoreapi
     Dans l'onglet credentials cliquer sur le bouton Regenerate Secret

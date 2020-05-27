@@ -3,8 +3,61 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: bookstore
-  labels:
-    istio-injection: enabled
+#  labels:
+#    istio-injection: enabled
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: oidc-namespace-admin
+  namespace: bookstore
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: "oidc:bookstore-namespace-admin"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: oidc-namespace-user
+  namespace: bookstore
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: "oidc:bookstore-namespace-edit"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: oidc-namespace-view
+  namespace: bookstore
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: "oidc:bookstore-namespace-view"
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: bookstore
+spec:
+  podSelector: 
+    matchLabels: {}
+  policyTypes:
+  - Ingress
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
@@ -17,12 +70,39 @@ spec:
     name: ca-lacave-issuer
     # We can reference ClusterIssuers by changing the kind here.
     # The default value is Issuer (i.e. a locally namespaced Issuer)
-    kind: Issuer
+    kind: ClusterIssuer
   commonName: keycloak.lacave
   organization:
   - Lacave CA
   dnsNames:
   - keycloak.lacave
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: access-to-keycloak
+  namespace: bookstore
+spec:
+  podSelector:
+    matchLabels:
+      app: keycloak
+#  policyTypes:
+#  - Ingress
+  ingress:
+    - from: []
+#    - from:
+#      - podSelector:
+#          matchLabels: {}
+#      - namespaceSelector: {}
+#      - podSelector: 
+#          matchLabels:
+#            app.kubernetes.io/name: ingress-nginx
+#      - namespaceSelector:
+#          matchLabels:
+#            name: ingress-nginx
+      ports: 
+      - protocol: TCP
+        port: 8080
 ---
 kind: StatefulSet
 apiVersion: apps/v1
@@ -88,7 +168,7 @@ metadata:
   name: ingress-keycloak
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/issuer: ca-lacave-issuer
+    cert-manager.io/cluster-issuer: ca-lacave-issuer
 spec:
   tls:
   - hosts:
@@ -135,16 +215,21 @@ spec:
     metadata:
       labels:
         app: bookstoredb
+        bd: mongo
     spec:
       containers:
       - name: bookstoredb
         # Ajuster le nom de l'image en fonction du repository Docker utilisé
-        image: elfelip01/mongobookstore:latest
+        image: docker.lacave/mongobookstore:latest
         ports:
         - containerPort: 27017
         volumeMounts:
         - name: bookstoredb-data
           mountPath: /mongo/data
+      # Spécifier le crédentiel si vous utilisé un repository Docker privé. 
+      # Pas nécessaire pour Docker Hub
+      imagePullSecrets:
+      - name: regcred
       volumes:
         - name: bookstoredb-data
           persistentVolumeClaim:
@@ -180,6 +265,50 @@ spec:
   selector:
     app: bookstoredb
 ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: access-to-bookstoredb
+  namespace: bookstore
+spec:
+  podSelector:
+    matchLabels:
+      app: bookstoredb
+  policyTypes:
+  - Ingress
+  ingress:
+    - from:
+      - podSelector: 
+          matchLabels:
+            bd: mongo
+      ports: 
+      - protocol: TCP
+        port: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstoreapi-service
+  namespace: bookstore
+  labels:
+    app: bookstoreapi
+    service: bookstoreapi
+spec:
+  ports:
+  - name: client
+    port: 80
+    protocol: TCP
+  selector:
+    app: bookstoreapi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookstoreapi-account
+  namespace: bookstore
+  labels:
+    account: bookstoreapi
+---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -194,7 +323,9 @@ spec:
     metadata:
       labels:
         app: bookstoreapi
+        bd: mongo
     spec:
+      serviceAccountName: bookstoreapi-account
       containers:
       - name: bookstoreapi
         # Ajuster le nom de l'image en fonction du repository Docker utilisé
@@ -207,20 +338,22 @@ spec:
       imagePullSecrets:
       - name: regcred
 ---
-apiVersion: v1
-kind: Service
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
-  name: bookstoreapi-service
+  name: access-to-bookstoreapi
   namespace: bookstore
-  labels:
-    app: bookstoreapi
 spec:
-  ports:
-  - name: client
-    port: 80
-    protocol: TCP
-  selector:
-    app: bookstoreapi
+  podSelector:
+    matchLabels:
+      app: bookstoreapi
+  policyTypes:
+  - Ingress
+  ingress:
+    - from: []
+      ports: 
+      - protocol: TCP
+        port: 80
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -229,6 +362,7 @@ metadata:
   name: ingress-bookstoreapi
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    #nginx.ingress.kubernetes.io/enable-opentracing: "true"
 spec:
   rules:
   - host: bookstoreapi.lacave

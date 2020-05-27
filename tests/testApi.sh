@@ -4,7 +4,7 @@ KEYCLOAK_REALM=bookstore
 KEYCLOAK_USER=gontran
 KEYCLOAK_PASSWORD=toto1234
 CLIENT_ID=bookstoreui
-CLIENT_SECRET=a9736089-fdc4-41ad-a09e-3f464c9b141d
+CLIENT_SECRET=35c86959-99d3-4934-95e1-596c7134d8da
 BOOKAPI_URL=http://bookstoreapi.lacave/api
 
 echo Obtenir la liste des livres sans authentification

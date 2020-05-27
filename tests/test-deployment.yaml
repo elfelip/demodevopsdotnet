@@ -1,0 +1,25 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: bookstoretest
+  namespace: bookstore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookstoretest
+  template:
+    metadata:
+      labels:
+        app: bookstoretest
+    spec:
+      containers:
+      - name: bookstoretest
+        # Ajuster le nom de l'image en fonction du repository Docker utilisé
+        image: docker.lacave/testbookapi:latest
+        imagePullPolicy: "Always"
+      # Spécifier le crédentiel si vous utilisé un repository Docker privé. 
+      # Pas nécessaire pour Docker Hub
+      imagePullSecrets:
+      - name: regcred
